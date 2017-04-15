@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Map | Fire for VK</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style>
+            html,
+            body {
+                height: 100%;
+            }
+            header {
+                height: 7%;
+            }
+            footer {
+                height: 7%;
+            }
+            #map-canvas {
+                height: 86%;
+                width: 100%;
+            }
+            .glider {
+                display: inline-block;
+            }
+            .glider-right {
+                display: inline-block;
+                float: right;
+            }
+            #snackbar {
+                visibility: hidden;
+                min-width: 250px;
+                margin-left: -125px;
+                background-color: #333;
+                color: #fff;
+                text-align: center;
+                border-radius: 2px;
+                padding: 16px;
+                position: fixed;
+                z-index: 1;
+                left: 50%;
+                bottom: 30px;
+                font-size: 17px;
+            }
+            #snackbar.show {
+                visibility: visible;
+                -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+                animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            }
+            @-webkit-keyframes fadein {
+                from {bottom: 0; opacity: 0;} 
+                to {bottom: 30px; opacity: 1;}
+            }
+            @keyframes fadein {
+                from {bottom: 0; opacity: 0;}
+                to {bottom: 30px; opacity: 1;}
+            }
+            @-webkit-keyframes fadeout {
+                from {bottom: 30px; opacity: 1;} 
+                to {bottom: 60px; opacity: 0;}
+            }
+            @keyframes fadeout {
+                from {bottom: 30px; opacity: 1;}
+                to {bottom: 60px; opacity: 0;}
+            }
+        </style>
+    </head>
+    <body class="w3-black">
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjkmAVzgNICX7UMKMI51x8JpNDuc0QPY4&callback=initMap" async defer></script>
+        <header class="w3-container w3-animate-top w3-black">
+            <a href=".."><button class="w3-btn glider"><img src="../misc/logo.png" height="25" /> Fire for VK</button></a>
+            <input type="text" autocomplete="off" class="w3-btn glider" id="lat-field" placeholder="Latitude" title="Latitude" />
+            <input type="text" autocomplete="off" class="w3-btn glider" id="long-field" placeholder="Longtitude" title="Longtitude" />
+            <button class="w3-btn glider-right" onclick="go()" title="Search for VK photos nearby selected point">Go</button>
+        </header>
+        <div id="map-canvas"></div>
+        <footer class="w3-container w3-animate-bottom w3-black w3-center">
+            <a target="_blank" href="https://vk.com/arthur_khazbs"><button class="w3-btn">by Arthur Khazbs, 2017</button></a>
+        </footer>
+        <div id="snackbar"></div>
+        <script>
+            var toastable = true;
+            function isNumeric(n) {
+                return !isNaN(parseFloat(n)) && isFinite(n);
+            }
+            function throwToast(toast, timeout=3000) {
+                var snackbar = document.getElementById("snackbar");
+                if (toastable) {
+                    toastable = false;
+                    snackbar.innerHTML = toast;
+                    snackbar.className = "show";
+                    setTimeout(function() {
+                        snackbar.className = snackbar.className.replace("show", "");
+                        snackbar.innerHTML = "";
+                        toastable = true;
+                    }, timeout);
+                }
+            }
+            function initMap() {
+                myOptions = {
+                    zoom: 12,
+                    center: new google.maps.LatLng(55.7522200,37.6155600)
+                };
+                var map = new google.maps.Map(document.getElementById('map-canvas'), myOptions);
+                google.maps.event.addListener(map, "rightclick", function(event) {
+                    let lat = event.latLng.lat();
+                    let long = event.latLng.lng();
+                    document.getElementById("lat-field").value = lat;
+                    document.getElementById("long-field").value = long;
+                    throwToast("Location picked successfully")
+                });
+            }
+            function go() {
+                let lat = document.getElementById("lat-field").value
+                let long = document.getElementById("long-field").value
+                if (isNumeric(lat) && isNumeric(long)) {
+                    window.open("../go?lat=" + lat + "&long=" + long, '_blank');
+                }
+                else {
+                    throwToast("Please input valid coordinates in the fields above or right-click a point on the map")
+                }
+            }
+        </script>
+    </body>
+</html>

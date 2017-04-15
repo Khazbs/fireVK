@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Photos | Fire for VK</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <style type="text/css">
+            .glider {
+                display: inline-block;
+            }
+            .glider-right {
+                display: inline-block;
+                float: right;
+            }
+            .grid {
+                column-count: 6;
+                column-gap: 1em;
+            }
+            .grid .grid-item {
+                display: inline-block;
+                width: 100%;
+                margin-bottom: 1em;
+                background-color: #000;
+            }
+        </style>
+    </head>
+    <body class="w3-black">
+        <header class="w3-container w3-black w3-margin-top w3-margin-bottom">
+            <a href=".."><button class="w3-btn glider"><img src="../misc/logo.png" height="25" /> Fire for VK</button></a>
+            <a href="{{mode_link}}" title="Toggle sorting criteria"><button class="w3-btn glider">{{mode_text}}</button></a>
+            <button class="w3-btn glider">nearby {{lat_coor}} {{long_coor}}</button>
+            <a href="{{next_page}}" title="Jump to next page"><button class="w3-btn glider-right">&gt;</button></a>
+            <button class="w3-btn glider-right">Page {{page_no}}</button></a>
+            {% raw prev_page_html %}
+        </header>
+        <div class="grid">
+            {% raw photo_html %}
+        </div>
+        <div id="modal" style="display: none;" class="w3-modal">
+            <div class="w3-modal-content w3-animate-zoom" style="width: 807px; margin-bottom: 50px;">
+                <a target="_blank" id="vk-link"><button class="w3-button w3-text-black">Open on VK</button></a>
+                <a target="_blank" id="open-link"><button class="w3-button w3-text-black">Open in full size</button></a>
+                <button onclick="analyse()" class="w3-button w3-text-black" id="analyse-button">Perform analysis</button>
+                <span onclick="contract()" class="w3-button w3-white w3-right">
+                    &times;
+                </span>
+                <div class="w3-text-black" style="white-space: pre; display: none; padding: 0 16px 16px;" id="desc-text"></div>
+                <img width="807" id="expanded-img" src="../misc/placeholder.png">
+            </div>
+        </div>
+        <footer class="w3-container w3-black w3-center">
+            <a target="_blank" href="https://vk.com/arthur_khazbs"><button class="w3-btn">by Arthur Khazbs, 2017</button></a>
+        </footer>
+        <script type="text/javascript">
+            var analyseButtonLocked = false;
+            function expand(full_id) {
+                analyseButtonLocked = false;
+                let maxres = document.getElementById(full_id).dataset.maxres;
+                let expres = document.getElementById(full_id).dataset.expres;
+                document.getElementById("expanded-img").setAttribute("src", expres);
+                document.getElementById("vk-link").setAttribute("href", "https://vk.com/photo" + full_id);
+                document.getElementById("open-link").setAttribute("href", maxres);
+                document.getElementById("analyse-button").innerHTML = "Analysis"
+                document.getElementById("modal").style.display = 'block';
+                document.getElementById("desc-text").style.display = 'block';
+            }
+            function contract() {
+                document.getElementById("modal").style.display = 'none';
+                document.getElementById("desc-text").style.display = 'none';
+                document.getElementById("expanded-img").setAttribute("src", "../misc/placeholder.png");
+                document.getElementById("vk-link").removeAttribute("href");
+                document.getElementById("open-link").removeAttribute("href");
+                document.getElementById("desc-text").innerHTML = "";
+            }
+            function analyse() {
+                if (!analyseButtonLocked) {
+                    analyseButtonLocked = true;
+                    document.getElementById("analyse-button").innerHTML = "Analysing...";
+                    let maxres = document.getElementById("open-link").getAttribute("href");
+                    $.ajax({
+                        url: '../cognitive',
+                        method: 'POST',
+                        data: {url: maxres},
+                        success: function(json) {
+                            let data = JSON.parse(json);
+                            document.getElementById("desc-text").innerHTML = data.desc_text;
+                            document.getElementById("analyse-button").innerHTML = "Analysis complete"
+                        },
+                        error: function() {
+                            document.getElementById("desc-text").innerHTML = "Analysis failed";
+                            document.getElementById("analyse-button").innerHTML = "Retry analysis"
+                            analyseButtonLocked = false;
+                        }
+                    });
+                }
+            }
+        </script>
+    </body>
+</html>
